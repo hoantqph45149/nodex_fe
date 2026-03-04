@@ -6,10 +6,21 @@ export default function FilePreview({ file, index, removeFile }) {
 
   return (
     <div
-      className={`relative rounded-md overflow-hidden bg-gray-700 flex items-center justify-center ${
-        isImage || isVideo ? "w-14 h-14" : "max-w-40 h-14"
-      }`}
+      className={`
+    relative
+    rounded-lg
+    overflow-hidden
+    bg-gray-700
+    flex items-center justify-center
+    transition
+    ${
+      isImage || isVideo
+        ? "w-14 h-14 sm:w-16 sm:h-16"
+        : "max-w-[160px] h-14 sm:h-16 px-2"
+    }
+  `}
     >
+      {/* IMAGE */}
       {isImage && (
         <img
           src={URL.createObjectURL(file)}
@@ -18,6 +29,7 @@ export default function FilePreview({ file, index, removeFile }) {
         />
       )}
 
+      {/* VIDEO */}
       {isVideo && (
         <>
           <video
@@ -25,19 +37,21 @@ export default function FilePreview({ file, index, removeFile }) {
             className="w-full h-full object-cover"
             muted
           />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <FaPlayCircle className="text-gray-400 text-2xl" />
+          <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+            <FaPlayCircle className="text-white text-2xl sm:text-3xl drop-shadow" />
           </div>
         </>
       )}
 
+      {/* FILE */}
       {!isImage && !isVideo && (
-        <div className="w-full h-full flex items-center justify-center text-white text-[10px] px-2">
-          <span className="text-lg w-6 h-6 flex items-center justify-center bg-gray-600 rounded mr-2">
-            <FaFile />
-          </span>
+        <div className="w-full h-full flex items-center gap-2 text-white text-xs">
+          <div className="w-7 h-7 flex items-center justify-center bg-gray-600 rounded-md shrink-0">
+            <FaFile className="text-sm" />
+          </div>
+
           <span
-            className="flex-1 text-[10px] break-words line-clamp-2"
+            className="flex-1 truncate text-[11px] leading-tight"
             title={file.name}
           >
             {file.name}
@@ -45,9 +59,22 @@ export default function FilePreview({ file, index, removeFile }) {
         </div>
       )}
 
+      {/* REMOVE BUTTON */}
       <button
         onClick={() => removeFile(index)}
-        className="absolute -top-1 -right-1 bg-black bg-opacity-70 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+        className="
+      absolute
+      -top-2 -right-2
+      w-6 h-6
+      rounded-full
+      bg-black/70
+      backdrop-blur
+      text-white
+      text-xs
+      flex items-center justify-center
+      hover:bg-red-500
+      transition
+    "
       >
         ✕
       </button>

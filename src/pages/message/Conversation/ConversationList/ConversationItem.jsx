@@ -14,44 +14,83 @@ export default function ConversationItem({
   return (
     <div
       onClick={() => onSelect(conversation._id)}
-      className={`p-4 hover:bg-gray-800 cursor-pointer border-l-4 transition-colors ${
-        selectedConversationId === conversation._id
-          ? "border-white bg-gray-700"
-          : "border-transparent"
-      }`}
+      className={`
+    group
+    px-4 sm:px-5 py-3
+    cursor-pointer
+    transition-all duration-200
+    border-l-4
+    ${
+      selectedConversationId === conversation._id
+        ? "border-white bg-gray-800"
+        : "border-transparent hover:bg-gray-800/60"
+    }
+  `}
     >
-      <div className="flex items-center space-x-3">
+      <div className="flex items-center gap-3">
         <AvatarChat
           conversation={conversation}
           user={null}
           authUser={authUser}
         />
+
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-white truncate">
+          <div className="flex items-center justify-between gap-2">
+            <h3
+              className={`
+            truncate text-sm sm:text-base font-semibold
+            ${conversation.unreadCount > 0 ? "text-white" : "text-gray-200"}
+          `}
+            >
               {getConversationName(conversation, authUser).fullName}
             </h3>
+
+            <span className="shrink-0 text-[11px] sm:text-xs text-gray-500">
+              {formatConversationTime(conversation?.updatedAt)}
+            </span>
           </div>
-          <p className="text-sm text-gray-300 truncate mt-1">
+
+          <p className="text-xs sm:text-sm text-gray-400 truncate mt-1">
             @{getConversationName(conversation, authUser).username}
           </p>
-          <p className="text-sm text-gray-500 truncate mt-1">
-            {getLastMessagePreview(conversation.lastMessage, authUser)}
-          </p>
-        </div>
 
-        <div className="flex flex-col justify-between items-end self-stretch gap-2">
-          <span className="min-w-10 text-xs text-right text-gray-500">
-            {formatConversationTime(conversation?.updatedAt)}
-          </span>
-          {conversation.unreadCount > 0 &&
-          !isConversationMuted(conversation, authUser._id) ? (
-            <div className="ml-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-xs text-white font-bold animate-pulse">
-              {conversation.unreadCount}
-            </div>
-          ) : isConversationMuted(conversation, authUser._id) ? (
-            <IoIosNotificationsOff className="text-white" />
-          ) : null}
+          <div className="flex items-center justify-between mt-1 gap-2">
+            <p
+              className={`
+            text-xs sm:text-sm truncate
+            ${
+              conversation.unreadCount > 0
+                ? "text-gray-200 font-medium"
+                : "text-gray-500"
+            }
+          `}
+            >
+              {getLastMessagePreview(conversation.lastMessage, authUser)}
+            </p>
+
+            {conversation.unreadCount > 0 &&
+            !isConversationMuted(conversation, authUser._id) ? (
+              <div
+                className="
+            shrink-0
+            min-w-[22px] h-[22px]
+            px-1
+            bg-blue-500
+            rounded-full
+            flex items-center justify-center
+            text-[11px]
+            text-white
+            font-bold
+          "
+              >
+                {conversation.unreadCount > 99
+                  ? "99+"
+                  : conversation.unreadCount}
+              </div>
+            ) : isConversationMuted(conversation, authUser._id) ? (
+              <IoIosNotificationsOff className="shrink-0 text-gray-500 text-sm" />
+            ) : null}
+          </div>
         </div>
       </div>
     </div>

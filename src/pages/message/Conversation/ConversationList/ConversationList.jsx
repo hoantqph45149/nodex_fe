@@ -41,7 +41,7 @@ function ConversationList({
     setSelectedUsers((prev) =>
       prev.some((u) => u._id === user._id)
         ? prev.filter((u) => u._id !== user._id)
-        : [...prev, user]
+        : [...prev, user],
     );
   };
 
@@ -50,7 +50,7 @@ function ConversationList({
       setSelectedConversationId(conversationId);
       setShowConversationInfo(false);
     },
-    [queryClient, setSelectedConversationId, setShowConversationInfo]
+    [queryClient, setSelectedConversationId, setShowConversationInfo],
   );
 
   const handleSelectUser = useCallback(
@@ -58,7 +58,7 @@ function ConversationList({
       const existingConversation = conversations.find(
         (conv) =>
           conv.participants.length === 2 &&
-          conv.participants.some((p) => p.user._id === user._id)
+          conv.participants.some((p) => p.user._id === user._id),
       );
 
       if (existingConversation) {
@@ -71,7 +71,7 @@ function ConversationList({
 
       setSearchTerm("");
     },
-    [conversations, setSelectedConversationId, setSelectedUser]
+    [conversations, setSelectedConversationId, setSelectedUser],
   );
 
   const handleSelectGroup = useCallback(
@@ -80,34 +80,53 @@ function ConversationList({
       setSelectedUser(null);
       setSearchTerm("");
     },
-    [setSelectedConversationId, setSelectedUser]
+    [setSelectedConversationId, setSelectedUser],
   );
 
   return (
-    <div className="w-80 h-full border-r border-gray-700 flex flex-col">
-      <div className="border-b border-gray-700">
+    <div
+      className="
+  w-full 
+  sm:w-80 
+  lg:w-[360px] 
+  h-full 
+  border-r border-gray-800 
+  flex flex-col 
+  bg-gray-900
+"
+    >
+      {/* Header + Search */}
+      <div className="shrink-0 border-b border-gray-800">
         <ConversationHeader
           onOpenGroup={() =>
             document.getElementById("create_group_modal")?.showModal()
           }
         />
-        <ConversationSearch
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-        />
+
+        <div className="px-3 sm:px-4 py-3">
+          <ConversationSearch
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+          />
+        </div>
       </div>
 
+      {/* Search Results */}
       {isLoading ? (
         <div className="flex items-center justify-center p-4">
           <LoadingSpinner size="small" />
         </div>
       ) : (
         <div
-          className={`${
-            searchResults?.users?.length > 0
-              ? "max-h-80 border-b border-gray-700"
-              : ""
-          } overflow-y-auto`}
+          className={`
+        overflow-y-auto
+        transition-all duration-200
+        ${
+          searchResults?.users?.length > 0
+            ? "max-h-60 sm:max-h-72 border-b border-gray-800"
+            : "max-h-0"
+        }
+      `}
           onScroll={handleScroll}
         >
           <SearchResults
@@ -120,33 +139,37 @@ function ConversationList({
         </div>
       )}
 
+      {/* Conversation List */}
       <div className="flex-1 overflow-y-auto">
         {conversationsLoading ? (
           <div className="p-4 space-y-4">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <div className="skeleton h-14 w-14 rounded-full"></div>
+              <div key={i} className="flex items-center gap-3 animate-pulse">
+                <div className="h-14 w-14 rounded-full bg-gray-700"></div>
                 <div className="flex-1 space-y-2">
-                  <div className="skeleton h-3 w-3/4"></div>
-                  <div className="skeleton h-2 w-1/2"></div>
-                  <div className="skeleton h-2 w-1/2"></div>
+                  <div className="h-3 w-3/4 bg-gray-700 rounded"></div>
+                  <div className="h-2 w-1/2 bg-gray-700 rounded"></div>
+                  <div className="h-2 w-1/3 bg-gray-700 rounded"></div>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          conversations.map((conv) => (
-            <ConversationItem
-              key={conv._id}
-              conversation={conv}
-              authUser={authUser}
-              selectedConversationId={selectedConversationId}
-              onSelect={handleChooseConversation}
-            />
-          ))
+          <div className="divide-y divide-gray-800">
+            {conversations.map((conv) => (
+              <ConversationItem
+                key={conv._id}
+                conversation={conv}
+                authUser={authUser}
+                selectedConversationId={selectedConversationId}
+                onSelect={handleChooseConversation}
+              />
+            ))}
+          </div>
         )}
       </div>
 
+      {/* Modal */}
       <CreateGroupModal
         authUser={authUser}
         search={search}

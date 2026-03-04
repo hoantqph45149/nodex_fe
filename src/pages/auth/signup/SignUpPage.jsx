@@ -7,9 +7,10 @@ import { MdOutlineMail } from "react-icons/md";
 import { FaUser } from "react-icons/fa";
 import { MdPassword } from "react-icons/md";
 import { MdDriveFileRenameOutline } from "react-icons/md";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { fetchWithAuth } from "../../../services/fetchInstance";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 const SignUpPage = () => {
   const [formData, setFormData] = useState({
@@ -18,6 +19,9 @@ const SignUpPage = () => {
     fullName: "",
     password: "",
   });
+
+  const [showPassword, setShowPassword] = useState(false);
+  const queryClient = useQueryClient();
 
   const { mutate, isError, isPending, error } = useMutation({
     mutationFn: async ({ email, username, fullName, password }) => {
@@ -40,6 +44,7 @@ const SignUpPage = () => {
     },
     onSuccess: () => {
       toast.success("Account created successfully");
+      queryClient.invalidateQueries({ queryKey: ["authUser"] }, {});
     },
   });
 
@@ -100,14 +105,23 @@ const SignUpPage = () => {
           </div>
           <label className="input input-bordered rounded flex items-center gap-2">
             <MdPassword />
+
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               className="grow"
               placeholder="Password"
               name="password"
               onChange={handleInputChange}
               value={formData.password}
             />
+
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="cursor-pointer"
+            >
+              {showPassword ? <FiEyeOff /> : <FiEye />}
+            </button>
           </label>
           <button className="btn rounded-full btn-primary text-white">
             {isPending ? "Loading..." : "Sign up"}

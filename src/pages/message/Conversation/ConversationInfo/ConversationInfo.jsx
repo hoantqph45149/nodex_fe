@@ -28,15 +28,15 @@ export default function ConversationInfo({
   const [isMuted, setMuted] = useState(false);
 
   const { mutate: UpdateGroup, isPending: isPendingUpdate } = useUpdateGroup(
-    conversation?._id
+    conversation?._id,
   );
   const { mutate: AddMembers, isPending: isPendingAdd } = useAddMembers(
-    conversation?._id
+    conversation?._id,
   );
 
   const { mutate: MuteConversation } = useSnoozeConversation(
     conversation?._id,
-    authUser
+    authUser,
   );
 
   const { mutate: LeaveConversation, isPending: isPendingLeave } =
@@ -47,7 +47,7 @@ export default function ConversationInfo({
   useEffect(() => {
     if (conversation?.participants.length > 0) {
       const { isMuted } = conversation.participants.find(
-        (p) => p.user._id === authUser._id
+        (p) => p.user._id === authUser._id,
       );
       setMuted(isMuted);
     }
@@ -58,14 +58,14 @@ export default function ConversationInfo({
     : getFollowStatus(
         authUser,
         conversation?.participants.find((p) => p.user._id !== authUser._id)
-          ?.user
+          ?.user,
       );
 
   const toggleSelectUser = (user) => {
     setSelectedUsers((prev) =>
       prev.some((u) => u._id === user._id)
         ? prev.filter((u) => u._id !== user._id)
-        : [...prev, user]
+        : [...prev, user],
     );
   };
 

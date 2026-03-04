@@ -46,7 +46,7 @@ export default function MessagePage() {
 
   const selectedConversation = useMemo(
     () => conversations.find((c) => c._id === selectedConversationId) || null,
-    [conversations, selectedConversationId]
+    [conversations, selectedConversationId],
   );
 
   const {
@@ -81,30 +81,38 @@ export default function MessagePage() {
     authUser,
   });
   return (
-    <div className="flex h-screen">
-      {/* Sidebar - conversation list */}
+    <div className="flex h-screen overflow-hidden bg-gray-900 text-white">
+      {/* Sidebar */}
       <div
         className={`
-      w-full sm:w-80 
+      w-full 
+      sm:w-80 
+      lg:w-[360px] 
+      border-r border-gray-800
       ${selectedConversation || selectedUser ? "hidden sm:block" : "block"}
     `}
       >
-        <ConversationList
-          conversations={conversations}
-          queryClient={queryClient}
-          selectedConversationId={selectedConversationId}
-          setSelectedConversationId={setSelectedConversationId}
-          setSelectedUser={setSelectedUser}
-          authUser={authUser}
-          setShowConversationInfo={setShowConversationInfo}
-          conversationsLoading={conversationsLoading}
-        />
+        <div className="h-full ">
+          <ConversationList
+            conversations={conversations}
+            queryClient={queryClient}
+            selectedConversationId={selectedConversationId}
+            setSelectedConversationId={setSelectedConversationId}
+            setSelectedUser={setSelectedUser}
+            authUser={authUser}
+            setShowConversationInfo={setShowConversationInfo}
+            conversationsLoading={conversationsLoading}
+          />
+        </div>
       </div>
 
-      {/* Main chat area */}
+      {/* Main Chat Area */}
       <div
         className={`
-      flex-1 flex flex-col 
+      flex-1 
+      flex 
+      flex-col 
+      bg-gray-950
       ${!selectedConversation && !selectedUser ? "hidden sm:flex" : "flex"}
     `}
       >
@@ -119,45 +127,58 @@ export default function MessagePage() {
           />
         ) : selectedConversation || selectedUser ? (
           <>
-            <ChatHeader
-              conversation={selectedConversation}
-              user={selectedUser}
-              authUser={authUser}
-              onBack={() => {
-                setSelectedConversationId(null);
-                setSelectedUser(null);
-              }}
-              onShowInfo={() => setShowConversationInfo(true)}
-            />
-            <ChatMessage
-              messages={messages}
-              conversation={selectedConversation}
-              messageOptionsId={messageOptionsId}
-              setMessageOptionsId={setMessageOptionsId}
-              replyingTo={replyingTo}
-              setReplyingTo={setReplyingTo}
-              handleRecallMessage={handleRecallMessage}
-              handleDeleteMessage={handleDeleteMessage}
-              handleReplyMessage={handleReplyMessage}
-              handleCopyMessage={handleCopyMessage}
-              typing={typing}
-            />
-            <MessageInput
-              handleSendMessage={handleSendMessage}
-              replyingTo={replyingTo}
-              setReplyingTo={setReplyingTo}
-              socket={socket}
-              conversationId={selectedConversation?._id}
-              authUser={authUser}
-            />
+            {/* Header */}
+            <div className="shrink-0 border-b border-gray-800">
+              <ChatHeader
+                conversation={selectedConversation}
+                user={selectedUser}
+                authUser={authUser}
+                onBack={() => {
+                  setSelectedConversationId(null);
+                  setSelectedUser(null);
+                }}
+                onShowInfo={() => setShowConversationInfo(true)}
+              />
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto px-3 sm:px-6 py-4">
+              <ChatMessage
+                messages={messages}
+                conversation={selectedConversation}
+                messageOptionsId={messageOptionsId}
+                setMessageOptionsId={setMessageOptionsId}
+                replyingTo={replyingTo}
+                setReplyingTo={setReplyingTo}
+                handleRecallMessage={handleRecallMessage}
+                handleDeleteMessage={handleDeleteMessage}
+                handleReplyMessage={handleReplyMessage}
+                handleCopyMessage={handleCopyMessage}
+                typing={typing}
+              />
+            </div>
+
+            {/* Input */}
+            <div className="shrink-0 border-t border-gray-800 px-3 sm:px-6 py-3 bg-gray-900">
+              <MessageInput
+                handleSendMessage={handleSendMessage}
+                replyingTo={replyingTo}
+                setReplyingTo={setReplyingTo}
+                socket={socket}
+                conversationId={selectedConversation?._id}
+                authUser={authUser}
+              />
+            </div>
           </>
         ) : (
-          <div className="flex-1 flex items-center justify-center border-r border-gray-700">
-            <div className="text-center text-gray-500">
-              <h2 className="text-xl font-semibold mb-2">
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center text-gray-500 px-6">
+              <h2 className="text-lg sm:text-xl font-semibold mb-2">
                 Select a conversation
               </h2>
-              <p>Choose a conversation or search a user to start messaging</p>
+              <p className="text-sm sm:text-base">
+                Choose a conversation or search a user to start messaging
+              </p>
             </div>
           </div>
         )}

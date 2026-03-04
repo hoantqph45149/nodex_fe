@@ -8,38 +8,42 @@ function ChatHeader({ conversation, user, authUser, onBack, onShowInfo }) {
   const displayName = conversation ? fullName : user?.fullName;
 
   return (
-    <div className="p-4 border-b border-gray-700 ">
+    <div className="border-b border-gray-700 bg-gray-900 px-3 py-3 sm:px-4">
       <div className="flex items-center justify-between">
-        {/* Left: back button (mobile) + avatar + name */}
-        <div className="flex items-center space-x-3">
-          {/* Back button chỉ hiện trên mobile */}
+        <div className="flex items-center gap-3 min-w-0">
           {onBack && (
             <button
               onClick={onBack}
-              className="sm:hidden p-2 mr-1 rounded-full hover:bg-gray-800 transition-colors"
+              className="sm:hidden p-2 -ml-1 rounded-full hover:bg-gray-800 transition shrink-0"
             >
               <FiArrowLeft className="w-5 h-5 text-gray-300" />
             </button>
           )}
 
-          <AvatarChat
-            conversation={conversation}
-            user={user}
-            authUser={authUser}
-          />
+          <div className="shrink-0">
+            <AvatarChat
+              conversation={conversation}
+              user={user}
+              authUser={authUser}
+            />
+          </div>
 
-          <div className="flex flex-col">
-            <h2 className="font-semibold text-white">{displayName}</h2>
+          <div className="flex flex-col min-w-0">
+            <h2 className="text-white font-semibold text-sm sm:text-base truncate">
+              {displayName}
+            </h2>
+
             {user && !conversation?.isGroup && (
-              <p className="text-xs text-gray-400">@{user?.username}</p>
+              <p className="text-xs text-gray-400 truncate">
+                @{user?.username}
+              </p>
             )}
           </div>
         </div>
 
-        {/* Right: info button */}
         <button
           onClick={onShowInfo}
-          className="p-2 hover:bg-gray-800 rounded-full transition-colors"
+          className="p-2 rounded-full hover:bg-gray-800 transition shrink-0"
         >
           <FiInfo className="w-5 h-5 text-gray-300" />
         </button>

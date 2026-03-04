@@ -4,12 +4,14 @@ import { MdOutlineMail, MdPassword } from "react-icons/md";
 import { Link } from "react-router-dom";
 import XSvg from "../../../components/svgs/X";
 import { fetchWithAuth } from "../../../services/fetchInstance";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -74,14 +76,23 @@ const LoginPage = () => {
 
           <label className="input input-bordered rounded flex items-center gap-2">
             <MdPassword />
+
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               className="grow"
               placeholder="Password"
               name="password"
               onChange={handleInputChange}
               value={formData.password}
             />
+
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="cursor-pointer"
+            >
+              {showPassword ? <FiEyeOff /> : <FiEye />}
+            </button>
           </label>
           <button className="btn rounded-full btn-primary text-white">
             {isPending ? "Loading..." : "Login"}

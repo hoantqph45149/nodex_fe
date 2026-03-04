@@ -96,8 +96,8 @@ function MessageInput({
         type: file.type.startsWith("image")
           ? "image"
           : file.type.startsWith("video")
-          ? "video"
-          : "file",
+            ? "video"
+            : "file",
         status: "uploading",
       })),
       createdAt: new Date().toISOString(),
@@ -124,15 +124,16 @@ function MessageInput({
   };
 
   return (
-    <div className="p-4 border-t border-gray-700 relative">
-      <div className="flex items-center space-x-3 relative">
+    <div className="relative bg-gray-900 px-3 py-3 sm:px-4">
+      <div className="flex items-center gap-2 sm:gap-3">
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="p-2 hover:bg-gray-800 rounded-full transition-colors"
+          className="p-2 rounded-full hover:bg-gray-800 transition shrink-0"
         >
           <FiPaperclip className="w-5 h-5 text-blue-400" />
         </button>
+
         <input
           ref={fileInputRef}
           type="file"
@@ -142,29 +143,43 @@ function MessageInput({
           onChange={(e) => e.target.files && addFiles(e.target.files)}
         />
 
-        <button className="p-2 hover:bg-gray-800 rounded-full transition-colors">
+        <button className="p-2 rounded-full hover:bg-gray-800 transition shrink-0">
           <FiCalendar className="w-5 h-5 text-blue-400" />
         </button>
-        <button
-          type="button"
-          onClick={() => setShowEmoji((prev) => !prev)}
-          className="p-2 hover:bg-gray-800 rounded-full transition-colors relative"
-        >
-          <FiSmile className="w-5 h-5 text-blue-400" />
-        </button>
 
-        {showEmoji && (
-          <div
-            ref={emojiRef}
-            className="absolute bottom-14 left-20 z-50 bg-gray-900 rounded-lg shadow-lg"
+        <div className="relative shrink-0">
+          <button
+            type="button"
+            onClick={() => setShowEmoji((prev) => !prev)}
+            className="p-2 rounded-full hover:bg-gray-800 transition"
           >
-            <EmojiPicker
-              onEmojiClick={(emojiData) =>
-                setNewMessage((prev) => prev + emojiData.emoji)
-              }
-            />
-          </div>
-        )}
+            <FiSmile className="w-5 h-5 text-blue-400" />
+          </button>
+
+          {showEmoji && (
+            <div
+              ref={emojiRef}
+              className="
+            absolute
+            bottom-12
+            left-0
+            sm:left-auto
+            sm:right-0
+            z-50
+            bg-gray-900
+            rounded-xl
+            shadow-xl
+            overflow-hidden
+          "
+            >
+              <EmojiPicker
+                onEmojiClick={(emojiData) =>
+                  setNewMessage((prev) => prev + emojiData.emoji)
+                }
+              />
+            </div>
+          )}
+        </div>
 
         <div className="flex-1 relative">
           <input
@@ -183,26 +198,50 @@ function MessageInput({
               if (e.key === "Escape") setReplyingTo(null);
             }}
             placeholder={replyingTo ? "Reply to message..." : "Aa"}
-            className="w-full px-4 py-2 bg-gray-800 text-white rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10 placeholder-gray-400"
+            className="
+          w-full
+          px-4
+          py-2
+          pr-10
+          bg-gray-800
+          text-white
+          rounded-full
+          text-sm
+          focus:outline-none
+          focus:ring-2
+          focus:ring-blue-500
+          placeholder-gray-400
+        "
           />
 
+          {/* Send Button */}
           <button
             type="submit"
             onClick={handleSend}
             disabled={!newMessage.trim() && attachments.length === 0}
-            className={`absolute right-2 top-1/2 transform -translate-y-1/2 p-1 rounded-full transition-colors ${
-              newMessage.trim() || attachments.length > 0
-                ? "hover:bg-gray-700 text-blue-400"
-                : "text-gray-600 cursor-not-allowed"
-            }`}
+            className={`
+          absolute
+          right-2
+          top-1/2
+          -translate-y-1/2
+          p-1.5
+          rounded-full
+          transition
+          ${
+            newMessage.trim() || attachments.length > 0
+              ? "hover:bg-gray-700 text-blue-400"
+              : "text-gray-600 cursor-not-allowed"
+          }
+        `}
           >
             <FiSend className="w-4 h-4" />
           </button>
         </div>
       </div>
 
+      {/* Attachments Preview */}
       {attachments.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-1">
           {attachments.map((file, i) => (
             <FilePreview
               key={i}

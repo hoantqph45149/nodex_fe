@@ -2,16 +2,53 @@ import { FiSearch } from "react-icons/fi";
 
 export default function ConversationSearch({ searchTerm, setSearchTerm }) {
   return (
-    <div className="px-4 pb-4">
-      <div className="relative">
-        <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+    <div className="px-3 py-3">
+      <div className="relative group">
+        <FiSearch
+          className="
+        absolute left-4 top-1/2 -translate-y-1/2
+        w-4 h-4
+        text-gray-400
+        group-focus-within:text-blue-400
+        transition-colors
+      "
+        />
+
         <input
           type="text"
-          placeholder="Search for users..."
+          placeholder="Search users or conversations..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 bg-gray-800 text-white rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400"
+          className="
+        w-full
+        pl-11 pr-10
+        py-2.5 sm:py-3
+        bg-gray-800/80
+        text-white
+        rounded-full
+        text-sm sm:text-base
+        placeholder-gray-400
+        outline-none
+        border border-transparent
+        focus:border-blue-500
+        focus:ring-2 focus:ring-blue-500/30
+        transition-all duration-200
+      "
         />
+
+        {searchTerm && (
+          <button
+            onClick={() => setSearchTerm("")}
+            className="
+          absolute right-3 top-1/2 -translate-y-1/2
+          text-gray-400 hover:text-white
+          text-sm
+          transition-colors
+        "
+          >
+            ✕
+          </button>
+        )}
       </div>
     </div>
   );
