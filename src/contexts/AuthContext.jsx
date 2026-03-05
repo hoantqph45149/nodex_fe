@@ -2,9 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "../components/common/LoadingSpinner";
-
+const apiUrl = import.meta.env.VITE_API_URL;
 const AuthContext = createContext(null);
-const publicRoutes = ["/login", "/signup"];
+const publicRoutes = [
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/reset-password",
+];
 
 export function AuthProvider({ children }) {
   const nav = useNavigate();
@@ -12,12 +17,9 @@ export function AuthProvider({ children }) {
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["authUser"],
     queryFn: async () => {
-      const res = await fetch(
-        "https://twitter-api-jiiv.onrender.com/api/auth/me",
-        {
-          credentials: "include",
-        }
-      );
+      const res = await fetch(`${apiUrl}/api/auth/me`, {
+        credentials: "include",
+      });
       if (!res.ok) {
         if (res.status === 401) throw new Error("Unauthorized");
         throw new Error("Fetch failed");

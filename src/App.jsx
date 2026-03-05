@@ -16,6 +16,8 @@ import { useConversationContext } from "./contexts/ConversationContext";
 import { useSocketContext } from "./contexts/SocketContext";
 import useConversationListener from "./hooks/useConversationListener";
 import useSocketMessageListener from "./hooks/useSocketMessageListener";
+import ForgotPassword from "./pages/auth/forgot/ForgotPassword";
+import ResetPassword from "./pages/auth/forgot/ResetPassword";
 import MessagePage from "./pages/message/MessagePage";
 
 function App() {
@@ -43,7 +45,6 @@ function App() {
   return (
     <>
       <Routes>
-        {/* Layout có Sidebar + RightPanel */}
         {authUser && (
           <Route element={<MainLayout />}>
             <Route path="/" element={<HomePage />} />
@@ -51,7 +52,6 @@ function App() {
           </Route>
         )}
 
-        {/* Layout chỉ có Sidebar */}
         {authUser && (
           <Route element={<SidebarOnlyLayout />}>
             <Route path="/notifications" element={<NotificationPage />} />
@@ -59,11 +59,12 @@ function App() {
           </Route>
         )}
 
-        {/* Layout không có gì (auth pages) */}
         {!authUser && (
           <Route element={<AuthLayout />}>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignUpPage />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
           </Route>
         )}
 
