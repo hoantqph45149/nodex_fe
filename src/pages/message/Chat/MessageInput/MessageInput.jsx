@@ -106,10 +106,21 @@ function MessageInput({
       status: "uploading",
     };
 
-    queryClient.setQueryData(["messages", conversationId], (old = []) => [
-      ...old,
-      optimisticMsg,
-    ]);
+    queryClient.setQueryData(["messages", conversationId], (old) => {
+      if (!old) return old;
+
+      return {
+        ...old,
+        pages: old.pages.map((page, index) =>
+          index === 0
+            ? {
+                ...page,
+                data: [optimisticMsg, ...page.data],
+              }
+            : page,
+        ),
+      };
+    });
 
     handleSendMessage({
       text: newMessage.trim(),

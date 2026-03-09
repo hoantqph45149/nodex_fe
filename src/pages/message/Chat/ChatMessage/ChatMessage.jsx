@@ -3,9 +3,17 @@ import { FiX } from "react-icons/fi";
 import Typing from "../../../../components/common/Typing";
 import Message from "./Message";
 import { useAuthContext } from "../../../../contexts/AuthContext";
+import {
+  formatTimeHeader,
+  shouldShowMessageTime,
+  shouldShowTimeSeparator,
+} from "../../../../utils/date";
 
 function ChatMessages({
   messages,
+  loadMoreMessages,
+  hasMoreMessages,
+  isLoadingMore,
   conversation,
   messageOptionsId,
   setMessageOptionsId,
@@ -18,49 +26,114 @@ function ChatMessages({
   typing,
 }) {
   const { authUser } = useAuthContext();
-  const messagesEndRef = useRef(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  const containerRef = useRef(null);
+  const lastMessageRef = useRef(null);
+
+  const prevScrollHeight = useRef(0);
+  const firstLoad = useRef(true);
+  const isLoadingMoreRef = useRef(false);
+
+  // reset khi đổi conversation
+  useEffect(() => {
+    firstLoad.current = true;
+  }, [conversation._id]);
 
   useEffect(() => {
-    scrollToBottom();
+    const container = containerRef.current;
+    if (!container) return;
+
+    // nếu đang loadMore → giữ vị trí scroll
+    if (isLoadingMoreRef.current) {
+      const newHeight = container.scrollHeight;
+      container.scrollTop = newHeight - prevScrollHeight.current;
+
+      prevScrollHeight.current = 0;
+      isLoadingMoreRef.current = false;
+      return;
+    }
+
+    // message mới → scroll xuống
+    lastMessageRef.current?.scrollIntoView({
+      behavior: firstLoad.current ? "auto" : "smooth",
+    });
+
+    firstLoad.current = false;
   }, [messages]);
+
+  const handleScroll = () => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const isNearTop = container.scrollTop <= 60;
+
+    if (isNearTop && hasMoreMessages && !isLoadingMore) {
+      prevScrollHeight.current = container.scrollHeight;
+      isLoadingMoreRef.current = true;
+      loadMoreMessages();
+    }
+  };
 
   const findMessageById = (messageReplyTo) =>
     messages.find((msg) => msg._id === messageReplyTo._id);
 
   return (
     <>
-      <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 bg-gray-950">
+      <div
+        ref={containerRef}
+        onScroll={handleScroll}
+        className="flex-1 h-full overflow-y-auto px-4 sm:px-6 py-4 bg-gray-950 [overflow-anchor:none]"
+      >
         <div className="space-y-5">
-          {messages.map((message) => {
+          {messages.map((message, index) => {
+            const prevMsg = messages[index - 1];
+            const nextMsg = messages[index + 1];
+
+            const showTime = shouldShowTimeSeparator(message, prevMsg);
+            const showMessageTime = shouldShowMessageTime(message, nextMsg);
+
             const isOwnMessage = message?.senderId?._id === authUser._id;
+
             const deleteFor = message?.deletedFor?.includes(
               authUser._id.toString(),
             );
 
             if (deleteFor) return null;
 
+            const isLast = index === messages.length - 1;
+
             return (
-              <Message
-                key={message._id}
-                message={message}
-                isOwnMessage={isOwnMessage}
-                messageOptionsId={messageOptionsId}
-                setMessageOptionsId={setMessageOptionsId}
-                handleReplyMessage={handleReplyMessage}
-                handleCopyMessage={handleCopyMessage}
-                handleRecallMessage={handleRecallMessage}
-                handleDeleteMessage={handleDeleteMessage}
-                authUser={authUser}
-                findMessageById={findMessageById}
-              />
+              <div key={message._id} ref={isLast ? lastMessageRef : null}>
+                {showTime && (
+                  <div className="flex justify-center my-4">
+                    <span className="text-xs text-gray-400">
+                      {formatTimeHeader(message.createdAt)}
+                    </span>
+                  </div>
+                )}
+
+                <Message
+                  message={message}
+                  showMessageTime={showMessageTime}
+                  isOwnMessage={isOwnMessage}
+                  messageOptionsId={messageOptionsId}
+                  setMessageOptionsId={setMessageOptionsId}
+                  handleReplyMessage={handleReplyMessage}
+                  handleCopyMessage={handleCopyMessage}
+                  handleRecallMessage={handleRecallMessage}
+                  handleDeleteMessage={handleDeleteMessage}
+                  authUser={authUser}
+                  findMessageById={findMessageById}
+                />
+              </div>
             );
           })}
 
-          <div ref={messagesEndRef} />
+          {isLoadingMore && (
+            <div className="text-center text-xs text-gray-500">
+              Loading messages...
+            </div>
+          )}
         </div>
 
         {/* Seen / Sent */}
@@ -68,6 +141,7 @@ function ChatMessages({
           <div className="flex justify-end mt-3">
             {(() => {
               const lastMsg = messages[messages.length - 1];
+
               const seenUsers = lastMsg.seenBy.filter(
                 (u) => u !== authUser._id,
               );
@@ -138,57 +212,11 @@ function ChatMessages({
                   {replyingTo.content}
                 </p>
               )}
-
-              {replyingTo.media?.length > 0 && (
-                <div className="flex gap-2 mt-2 flex-wrap">
-                  {replyingTo.media.map((file, idx) => {
-                    if (file.type.startsWith("image")) {
-                      return (
-                        <img
-                          key={idx}
-                          src={file.url}
-                          alt="img"
-                          className="h-14 w-14 object-cover rounded-md"
-                        />
-                      );
-                    }
-
-                    if (file.type.startsWith("video")) {
-                      return (
-                        <video
-                          key={idx}
-                          src={file.url}
-                          className="h-14 w-14 object-cover rounded-md"
-                          muted
-                        />
-                      );
-                    }
-
-                    return (
-                      <a
-                        key={idx}
-                        href={file.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-400 text-xs underline"
-                      >
-                        📎 {file.name || "File"}
-                      </a>
-                    );
-                  })}
-                </div>
-              )}
             </div>
 
             <button
               onClick={() => setReplyingTo(null)}
-              className="
-            w-8 h-8
-            flex items-center justify-center
-            rounded-full
-            hover:bg-gray-800
-            transition
-          "
+              className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-800 transition"
             >
               <FiX className="w-4 h-4 text-gray-400" />
             </button>

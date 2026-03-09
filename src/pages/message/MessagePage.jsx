@@ -51,6 +51,9 @@ export default function MessagePage() {
 
   const {
     messages,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     handleSendMessage,
     handleRecallMessage,
     handleDeleteMessage,
@@ -85,35 +88,34 @@ export default function MessagePage() {
       {/* Sidebar */}
       <div
         className={`
-      w-full 
-      sm:w-80 
-      lg:w-[360px] 
-      border-r border-gray-800
-      ${selectedConversation || selectedUser ? "hidden sm:block" : "block"}
-    `}
+    w-full
+    lg:w-[320px]
+    bg-gray-900
+    border-r border-gray-800
+    ${selectedConversation || selectedUser ? "hidden lg:block" : "block"}
+  `}
       >
-        <div className="h-full ">
-          <ConversationList
-            conversations={conversations}
-            queryClient={queryClient}
-            selectedConversationId={selectedConversationId}
-            setSelectedConversationId={setSelectedConversationId}
-            setSelectedUser={setSelectedUser}
-            authUser={authUser}
-            setShowConversationInfo={setShowConversationInfo}
-            conversationsLoading={conversationsLoading}
-          />
-        </div>
+        <ConversationList
+          conversations={conversations}
+          queryClient={queryClient}
+          selectedConversationId={selectedConversationId}
+          setSelectedConversationId={setSelectedConversationId}
+          setSelectedUser={setSelectedUser}
+          authUser={authUser}
+          setShowConversationInfo={setShowConversationInfo}
+          conversationsLoading={conversationsLoading}
+        />
       </div>
 
       {/* Main Chat Area */}
       <div
         className={`
       flex-1 
+      min-w-0
       flex 
       flex-col 
-      bg-gray-950
-      ${!selectedConversation && !selectedUser ? "hidden sm:flex" : "flex"}
+    bg-gray-950
+      ${!selectedConversation && !selectedUser ? "hidden lg:flex" : "flex"}
     `}
       >
         {showConversationInfo ? (
@@ -142,9 +144,12 @@ export default function MessagePage() {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-3 sm:px-6 py-4">
+            <div className="flex-1 overflow-y-auto px-3 lg:px-6 py-4">
               <ChatMessage
                 messages={messages}
+                loadMoreMessages={fetchNextPage}
+                hasMoreMessages={hasNextPage}
+                isLoadingMore={isFetchingNextPage}
                 conversation={selectedConversation}
                 messageOptionsId={messageOptionsId}
                 setMessageOptionsId={setMessageOptionsId}
@@ -173,7 +178,7 @@ export default function MessagePage() {
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center text-gray-500 px-6">
-              <h2 className="text-lg sm:text-xl font-semibold mb-2">
+              <h2 className="text-lg sm:text-xl font-semibold pb-2">
                 Select a conversation
               </h2>
               <p className="text-sm sm:text-base">

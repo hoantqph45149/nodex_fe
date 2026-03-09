@@ -48,7 +48,7 @@ export default function useSocketMessageListener({
       queryClient.setQueryData(["conversations"], (old = []) => {
         const updatedConversations = [...old];
         const index = updatedConversations.findIndex(
-          (c) => c._id === message.conversationId._id
+          (c) => c._id === message.conversationId._id,
         );
         let updatedConv;
         if (index !== -1) {
@@ -76,10 +76,27 @@ export default function useSocketMessageListener({
 
       queryClient.setQueryData(
         ["messages", message.conversationId._id],
-        (old = []) => {
-          const exists = old.some((msg) => msg._id === message._id);
-          return exists ? old : [...old, message];
-        }
+        (old) => {
+          if (!old) return old;
+
+          const exists = old.pages[0].data.some(
+            (msg) => msg._id === message._id,
+          );
+
+          if (exists) return old;
+
+          return {
+            ...old,
+            pages: old.pages.map((page, index) =>
+              index === 0
+                ? {
+                    ...page,
+                    data: [message, ...page.data],
+                  }
+                : page,
+            ),
+          };
+        },
       );
     };
 

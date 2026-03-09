@@ -66,43 +66,54 @@ const CreatePost = () => {
   };
 
   return (
-    <div className="flex p-4 items-start gap-4 border-b border-gray-700">
-      <div className="avatar">
-        <div className="w-8 rounded-full">
+    <div className="flex p-3 sm:p-4 items-start gap-3 sm:gap-4 border-b border-gray-700">
+      {/* Avatar */}
+      <div className="avatar flex-shrink-0">
+        <div className="w-8 sm:w-9 rounded-full">
           <img src={authUser?.profileImg || "/avatar-placeholder.png"} />
         </div>
       </div>
-      <form className="flex flex-col gap-2 w-full" onSubmit={handleSubmit}>
+
+      <form
+        className="flex flex-col gap-2 w-full min-w-0"
+        onSubmit={handleSubmit}
+      >
+        {/* Textarea */}
         <textarea
-          className="textarea w-full p-0 text-lg resize-none border-none focus:outline-none  border-gray-800"
+          className="w-full p-0 text-base sm:text-lg resize-none border-none focus:outline-none bg-transparent"
           placeholder="What is happening?!"
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
+
+        {/* Image preview */}
         {img && (
-          <div className="relative w-72 mx-auto">
+          <div className="relative w-full max-w-md mx-auto">
             <IoCloseSharp
-              className="absolute top-0 right-0 text-white bg-gray-800 rounded-full w-5 h-5 cursor-pointer"
+              className="absolute top-2 right-2 text-white bg-gray-800 rounded-full w-6 h-6 p-1 cursor-pointer"
               onClick={() => {
                 setImg(null);
                 imgRef.current.value = null;
               }}
             />
+
             <img
               src={img}
-              className="w-full mx-auto h-72 object-contain rounded"
+              className="w-full max-h-80 object-contain rounded-lg"
             />
           </div>
         )}
 
-        <div className="flex justify-between border-t py-2 border-t-gray-700">
-          <div className="flex gap-1 items-center">
+        {/* Actions */}
+        <div className="flex items-center justify-between border-t border-gray-700 pt-2">
+          <div className="flex gap-2 items-center">
             <CiImageOn
-              className="fill-primary w-6 h-6 cursor-pointer"
+              className="fill-primary w-5 h-5 sm:w-6 sm:h-6 cursor-pointer"
               onClick={() => imgRef.current.click()}
             />
-            <BsEmojiSmileFill className="fill-primary w-5 h-5 cursor-pointer" />
+            <BsEmojiSmileFill className="fill-primary w-4 h-4 sm:w-5 sm:h-5 cursor-pointer" />
           </div>
+
           <input
             type="file"
             accept="image/*"
@@ -110,11 +121,13 @@ const CreatePost = () => {
             ref={imgRef}
             onChange={handleImgChange}
           />
-          <button className="btn btn-primary rounded-full btn-sm text-white px-4">
+
+          <button className="btn btn-primary rounded-full btn-sm text-white px-4 sm:px-5">
             {isPending ? "Posting..." : "Post"}
           </button>
         </div>
-        {isError && <div className="text-red-500">{error.message}</div>}
+
+        {isError && <div className="text-red-500 text-sm">{error.message}</div>}
       </form>
     </div>
   );

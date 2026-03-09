@@ -23,7 +23,6 @@ const ResetPassword = () => {
     mutate: resetPasswordMutation,
     isPending,
     isError,
-    isSuccess,
     error,
   } = useMutation({
     mutationFn: async ({ password }) => {

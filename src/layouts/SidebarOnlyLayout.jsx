@@ -3,9 +3,9 @@ import { Outlet } from "react-router-dom";
 
 export default function SidebarOnlyLayout() {
   return (
-    <div className="flex max-w-6xl mx-auto">
+    <div className="flex w-full max-w-6xl mx-auto">
       <Sidebar />
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         <Outlet />
       </div>
     </div>

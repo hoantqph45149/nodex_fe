@@ -9,7 +9,7 @@ export default function ConversationSearch({ searchTerm, setSearchTerm }) {
         absolute left-4 top-1/2 -translate-y-1/2
         w-4 h-4
         text-gray-400
-        group-focus-within:text-blue-400
+        group-focus-within:text-white
         transition-colors
       "
         />
@@ -30,8 +30,7 @@ export default function ConversationSearch({ searchTerm, setSearchTerm }) {
         placeholder-gray-400
         outline-none
         border border-transparent
-        focus:border-blue-500
-        focus:ring-2 focus:ring-blue-500/30
+        focus:border-white
         transition-all duration-200
       "
         />

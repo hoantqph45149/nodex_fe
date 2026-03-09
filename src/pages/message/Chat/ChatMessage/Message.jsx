@@ -93,7 +93,12 @@ function ReplyPreview({ message, authUser, findMessageById }) {
   );
 }
 
-function MessageBubble({ message, isOwnMessage, setPreviewMedia }) {
+function MessageBubble({
+  message,
+  showMessageTime,
+  isOwnMessage,
+  setPreviewMedia,
+}) {
   return (
     <div
       className={`px-3 py-2 rounded-2xl flex flex-col space-y-2 w-fit ${
@@ -116,12 +121,23 @@ function MessageBubble({ message, isOwnMessage, setPreviewMedia }) {
           ))}
         </div>
       )}
+      {showMessageTime && (
+        <span
+          className={`text-[11px] ${isOwnMessage ? "text-right text-white" : "text-left text-gray-400"} mt-1 block`}
+        >
+          {new Date(message.createdAt).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </span>
+      )}
     </div>
   );
 }
 
 export default function Message({
   message,
+  showMessageTime,
   isOwnMessage,
   messageOptionsId,
   setMessageOptionsId,
@@ -162,6 +178,7 @@ export default function Message({
                 />
                 <MessageBubble
                   message={message}
+                  showMessageTime={showMessageTime}
                   isOwnMessage={true}
                   setPreviewMedia={setPreviewMedia}
                 />
@@ -188,6 +205,7 @@ export default function Message({
                 />
                 <MessageBubble
                   message={message}
+                  showMessageTime={showMessageTime}
                   isOwnMessage={false}
                   setPreviewMedia={setPreviewMedia}
                 />

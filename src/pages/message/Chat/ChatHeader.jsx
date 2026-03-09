@@ -14,7 +14,7 @@ function ChatHeader({ conversation, user, authUser, onBack, onShowInfo }) {
           {onBack && (
             <button
               onClick={onBack}
-              className="sm:hidden p-2 -ml-1 rounded-full hover:bg-gray-800 transition shrink-0"
+              className="lg:hidden p-2 -ml-1 rounded-full hover:bg-gray-800 transition shrink-0"
             >
               <FiArrowLeft className="w-5 h-5 text-gray-300" />
             </button>

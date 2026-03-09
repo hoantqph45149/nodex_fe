@@ -86,9 +86,7 @@ function ConversationList({
   return (
     <div
       className="
-  w-full 
-  sm:w-80 
-  lg:w-[360px] 
+  w-full
   h-full 
   border-r border-gray-800 
   flex flex-col 
@@ -139,7 +137,7 @@ function ConversationList({
         </div>
       )}
 
-      {/* Conversation List */}
+      {/* Conversations */}
       <div className="flex-1 overflow-y-auto">
         {conversationsLoading ? (
           <div className="p-4 space-y-4">

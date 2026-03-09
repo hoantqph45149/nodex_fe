@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 import { useSocketContext } from "../contexts/SocketContext";
@@ -21,36 +26,63 @@ export default function useMessages({
   const lastmessage = selectedConversation?.lastMessage;
 
   useEffect(() => {
-    if (!socket) return;
-    socket?.emit("joinRoom", conversationId);
+    if (!socket || !conversationId) return;
+
+    socket.emit("joinRoom", conversationId);
+
     const handleMessagesSeen = ({ user }) => {
-      queryClient.setQueryData(["messages", conversationId], (old = []) =>
-        old.map((msg) =>
-          msg.seenBy.some((u) => u._id === user._id)
-            ? msg
-            : { ...msg, seenBy: [...msg.seenBy, user] }
-        )
-      );
+      console.log("user", user);
+      queryClient.setQueryData(["messages", conversationId], (old) => {
+        if (!old) return old;
+
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            data: page.data.map((msg) =>
+              msg.seenBy.some((u) => u._id === user._id)
+                ? msg
+                : { ...msg, seenBy: [...msg.seenBy, user] },
+            ),
+          })),
+        };
+      });
     };
 
     socket.on("messages_seen", handleMessagesSeen);
+
     return () => {
-      socket?.emit("leaveRoom", `conversation_${conversationId}`);
+      socket.emit("leaveRoom", conversationId);
       socket.off("messages_seen", handleMessagesSeen);
     };
   }, [conversationId, socket]);
 
   // 🟢 Lấy danh sách tin nhắn
-  const { data: messages = [], refetch } = useQuery({
-    queryKey: ["messages", conversationId],
-    queryFn: async () => {
-      const res = await fetchWithAuth(`${API_URL}/messages/${conversationId}`);
-      if (!res.ok) throw new Error("Failed to fetch messages");
-      const data = await res.json();
-      return data.data;
-    },
-    enabled: !!conversationId,
-  });
+  const { data, fetchNextPage, hasNextPage, refetch, isFetchingNextPage } =
+    useInfiniteQuery({
+      queryKey: ["messages", conversationId],
+
+      queryFn: async ({ pageParam = null }) => {
+        const url = pageParam
+          ? `${API_URL}/messages/${conversationId}?cursor=${pageParam}`
+          : `${API_URL}/messages/${conversationId}`;
+
+        const res = await fetchWithAuth(url);
+        if (!res.ok) throw new Error("Failed to fetch messages");
+
+        return res.json();
+      },
+
+      getNextPageParam: (lastPage) => {
+        if (!lastPage.hasMore) return undefined;
+        return lastPage.nextCursor;
+      },
+
+      enabled: !!conversationId,
+    });
+
+  // flatten pages
+  const messages = data?.pages?.flatMap((page) => page.data).reverse() || [];
 
   // 🟡 Đánh dấu đã đọc khi vào phòng
   const markAsSeen = useMutation({
@@ -63,8 +95,8 @@ export default function useMessages({
     onSuccess: () => {
       queryClient.setQueryData(["conversations"], (old = []) =>
         old.map((conv) =>
-          conv._id === conversationId ? { ...conv, unreadCount: 0 } : conv
-        )
+          conv._id === conversationId ? { ...conv, unreadCount: 0 } : conv,
+        ),
       );
     },
     onError: (error) => {
@@ -87,7 +119,7 @@ export default function useMessages({
 
       const receiver = selectedConversation
         ? selectedConversation.participants.find(
-            (p) => p.user._id !== authUser?._id
+            (p) => p.user._id !== authUser?._id,
           )?.user
         : null;
 
@@ -107,7 +139,7 @@ export default function useMessages({
       } else {
         formData.append(
           "receiverId",
-          selectedUser ? selectedUser._id : receiver._id
+          selectedUser ? selectedUser._id : receiver._id,
         );
       }
 
@@ -123,39 +155,30 @@ export default function useMessages({
     // 💡 nhận cả data và biến (variables)
     onSuccess: (res, variables) => {
       const { data } = res;
-      console.log("Sent message:", data);
+
       queryClient.setQueryData(
-        ["messages", data?.message?.conversationId._id],
-        (old = []) =>
-          old.map((msg) =>
-            msg._id === variables.optimisticMsg._id ? data?.message : msg
-          )
+        ["messages", data.message.conversationId._id],
+        (old) => {
+          if (!old) return old;
+
+          return {
+            ...old,
+            pages: old.pages.map((page, index) =>
+              index === 0
+                ? {
+                    ...page,
+                    data: page.data.map((msg) =>
+                      msg._id === variables.optimisticMsg._id
+                        ? data.message
+                        : msg,
+                    ),
+                  }
+                : page,
+            ),
+          };
+        },
       );
 
-      // update conversations
-      queryClient.setQueryData(["conversations"], (old = []) => {
-        const index = old.findIndex(
-          (c) => c._id === data?.message?.conversationId._id
-        );
-
-        if (index === -1) {
-          return [data?.conversation, ...old];
-        }
-
-        const updatedConv = {
-          ...old[index],
-          lastMessage: data?.message,
-          updatedAt: data?.message?.createdAt,
-        };
-
-        const newList = old.filter((_, i) => i !== index);
-        return [updatedConv, ...newList];
-      });
-
-      if (selectedUser) {
-        setSelectedConversationId(data?.message?.conversationId._id);
-        setSelectedUser(null);
-      }
       setReplyingTo(null);
     },
 
@@ -165,8 +188,8 @@ export default function useMessages({
         old.map((msg) =>
           msg._id === variables.optimisticMsg._id
             ? { ...msg, status: "error" }
-            : msg
-        )
+            : msg,
+        ),
       );
 
       toast.error("Failed to send message: " + error.message);
@@ -179,32 +202,54 @@ export default function useMessages({
       fetchWithAuth(`${API_URL}/messages/completely/${messageId}`, {
         method: "DELETE",
       }),
+
     onSuccess: (_, messageId) => {
-      queryClient.setQueryData(["messages", conversationId], (old = []) =>
-        old.map((msg) =>
-          msg._id === messageId
-            ? { ...msg, recalled: true, content: "Message recalled" }
-            : msg
-        )
-      );
+      queryClient.setQueryData(["messages", conversationId], (old) => {
+        if (!old) return old;
+
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            data: page.data.map((msg) =>
+              msg._id === messageId
+                ? { ...msg, recalled: true, content: "Message recalled" }
+                : msg,
+            ),
+          })),
+        };
+      });
     },
+
     onError: (error) => {
       toast.error("Failed to recall message: " + error.message);
     },
   });
 
-  // ❌ Xóa tin nhắn
+  // 🗑️ Xóa tin nhắn với người khá
+  //
   const deleteMessage = useMutation({
     mutationFn: (messageId) =>
       fetchWithAuth(`${API_URL}/messages/${messageId}`, {
         method: "DELETE",
       }),
+
     onSuccess: (_, messageId) => {
-      queryClient.setQueryData(["messages", conversationId], (old = []) =>
-        old.filter((msg) => msg._id !== messageId)
-      );
+      queryClient.setQueryData(["messages", conversationId], (old) => {
+        if (!old) return old;
+
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            data: page.data.filter((msg) => msg._id !== messageId),
+          })),
+        };
+      });
+
       toast.success("Message deleted");
     },
+
     onError: (error) => {
       toast.error("Failed to delete message: " + error.message);
     },
@@ -212,6 +257,9 @@ export default function useMessages({
 
   return {
     messages,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     handleSendMessage: sendMessage.mutate,
     handleRecallMessage: recallMessage.mutate,
     handleDeleteMessage: deleteMessage.mutate,

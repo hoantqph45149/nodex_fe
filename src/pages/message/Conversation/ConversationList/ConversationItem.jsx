@@ -11,23 +11,26 @@ export default function ConversationItem({
   selectedConversationId,
   onSelect,
 }) {
+  const user = getConversationName(conversation, authUser);
+
   return (
     <div
       onClick={() => onSelect(conversation._id)}
       className={`
-    group
-    px-4 sm:px-5 py-3
-    cursor-pointer
-    transition-all duration-200
-    border-l-4
-    ${
-      selectedConversationId === conversation._id
-        ? "border-white bg-gray-800"
-        : "border-transparent hover:bg-gray-800/60"
-    }
-  `}
+      w-full
+      px-3 sm:px-4 lg:px-5
+      py-2.5 sm:py-3
+      cursor-pointer
+      transition-all duration-200
+      border-l-4
+      ${
+        selectedConversationId === conversation._id
+          ? "border-white bg-gray-800"
+          : "border-transparent hover:bg-gray-800/60"
+      }
+    `}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 sm:gap-4">
         <AvatarChat
           conversation={conversation}
           user={null}
@@ -35,35 +38,41 @@ export default function ConversationItem({
         />
 
         <div className="flex-1 min-w-0">
+          {/* name + time */}
           <div className="flex items-center justify-between gap-2">
             <h3
               className={`
-            truncate text-sm sm:text-base font-semibold
-            ${conversation.unreadCount > 0 ? "text-white" : "text-gray-200"}
-          `}
+              truncate
+              text-xs sm:text-base
+              font-semibold
+              ${conversation.unreadCount > 0 ? "text-white" : "text-gray-200"}
+            `}
             >
-              {getConversationName(conversation, authUser).fullName}
+              {user.fullName}
             </h3>
 
-            <span className="shrink-0 text-[11px] sm:text-xs text-gray-500">
+            <span className="shrink-0 text-[10px] sm:text-xs text-gray-500">
               {formatConversationTime(conversation?.updatedAt)}
             </span>
           </div>
 
-          <p className="text-xs sm:text-sm text-gray-400 truncate mt-1">
-            @{getConversationName(conversation, authUser).username}
+          {/* username */}
+          <p className="truncate text-[11px] sm:text-xs text-gray-400 mt-0.5">
+            @{user.username}
           </p>
 
-          <div className="flex items-center justify-between mt-1 gap-2">
+          {/* message preview */}
+          <div className="flex items-center justify-between gap-2 mt-1">
             <p
               className={`
-            text-xs sm:text-sm truncate
-            ${
-              conversation.unreadCount > 0
-                ? "text-gray-200 font-medium"
-                : "text-gray-500"
-            }
-          `}
+              truncate
+              text-xs sm:text-sm
+              ${
+                conversation.unreadCount > 0
+                  ? "text-gray-200 font-medium"
+                  : "text-gray-500"
+              }
+            `}
             >
               {getLastMessagePreview(conversation.lastMessage, authUser)}
             </p>
@@ -72,16 +81,17 @@ export default function ConversationItem({
             !isConversationMuted(conversation, authUser._id) ? (
               <div
                 className="
-            shrink-0
-            min-w-[22px] h-[22px]
-            px-1
-            bg-blue-500
-            rounded-full
-            flex items-center justify-center
-            text-[11px]
-            text-white
-            font-bold
-          "
+                shrink-0
+                min-w-[20px] h-[20px]
+                sm:min-w-[22px] sm:h-[22px]
+                px-1
+                bg-blue-500
+                rounded-full
+                flex items-center justify-center
+                text-[10px] sm:text-[11px]
+                text-white
+                font-bold
+              "
               >
                 {conversation.unreadCount > 99
                   ? "99+"
